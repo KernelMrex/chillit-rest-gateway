@@ -1,17 +1,23 @@
 package configuration
 
 import (
+	"chillit-rest-gateway/internal/app/apiserver"
+	"chillit-rest-gateway/internal/app/places"
 	"errors"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
+// Configuration configures application
 type Configuration struct {
-	StoreServiceConfig `yaml:"store_service"`
+	StoreService *places.Config    `yaml:"store_service"`
+	APIServer    *apiserver.Config `yaml:"api_server"`
 }
 
-func NewConfig(path string) (*Configuration, error) {
+// ParseConfig parses from file
+func ParseConfig(path string) (*Configuration, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.New("[ NewConfig ] could not open file: " + err.Error())
