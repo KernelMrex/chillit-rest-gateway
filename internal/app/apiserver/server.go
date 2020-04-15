@@ -46,6 +46,7 @@ func (s *server) postPlaceHandler() http.HandlerFunc {
 		var place requestPlace
 		if err := decoder.Decode(&place); err != nil {
 			s.logger.Errorln("[ PostPlaceHandler ] error while decoding request body:", err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		_, err := s.placesStore.AddPlace(r.Context(), &places.AddPlaceRequest{
@@ -57,7 +58,7 @@ func (s *server) postPlaceHandler() http.HandlerFunc {
 		})
 		if err != nil {
 			s.logger.Errorln("[ PostPlaceHandler ] error while sending request to store service:", err)
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadGateway)
 			return
 		}
 	})
