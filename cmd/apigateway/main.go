@@ -19,17 +19,20 @@ func init() {
 func main() {
 	flag.Parse()
 
+	log.Println("Parsing config")
 	config, err := configuration.ParseConfig(configPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	log.Println("Connecting places storage")
 	conn, err := grpc.Dial(config.StoreService.URL, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer conn.Close()
 
+	log.Println("Starting HTTP server")
 	if err := apiserver.Start(config.APIServer, places.NewPlacesStoreClient(conn)); err != nil {
 		log.Fatalln(err)
 	}

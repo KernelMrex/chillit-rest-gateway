@@ -2,11 +2,12 @@ package apiserver
 
 import (
 	"chillit-rest-gateway/internal/app/places"
+	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,53 +27,24 @@ func newServer(placesStore places.PlacesStoreClient) *server {
 	return s
 }
 
-// TODO: add logging middleware
 func (s *server) configureRouter() {
-	s.router.HandleFunc("/place", s.postPlaceHandler()).Methods(http.MethodPost)
 	s.router.HandleFunc("/places", s.getPlacesHandler()).Methods(http.MethodGet)
+	s.router.HandleFunc("/cities", s.notImplementedHandler()).Methods(http.MethodGet)
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func (s *server) postPlaceHandler() http.HandlerFunc {
-	type requestPlace struct {
-		Title       string `json:"title"`
-		Address     string `json:"address"`
-		Description string `json:"description"`
-	}
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		decoder := json.NewDecoder(r.Body)
-		var place requestPlace
-		if err := decoder.Decode(&place); err != nil {
-			s.logger.Errorln("[ PostPlaceHandler ] error while decoding request body:", err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		_, err := s.placesStore.AddPlace(r.Context(), &places.AddPlaceRequest{
-			Place: &places.Place{
-				Title:       place.Title,
-				Address:     place.Address,
-				Description: place.Description,
-			},
-		})
-		if err != nil {
-			s.logger.Errorln("[ PostPlaceHandler ] error while sending request to store service:", err)
-			w.WriteHeader(http.StatusBadGateway)
-			return
-		}
-	})
-}
-
 func (s *server) getPlacesHandler() http.HandlerFunc {
 	const methodName string = "GET /places"
 
-	// Got as URLQuery
 	type request struct {
-		Offset uint64
-		Amount uint64
+		Offset uint64 `schema:"offset"`
+		Amount uint64 `schema:"amount"`
+		CityID uint64 `schema:"city_id"`
 	}
+
 	type responsePlace struct {
 		ID          uint64 `json:"id"`
 		Title       string `json:"title"`
@@ -85,47 +57,42 @@ func (s *server) getPlacesHandler() http.HandlerFunc {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var reqPlaces request
-		urlVals := r.URL.Query()
-
-		var err error
-		reqPlaces.Offset, err = strconv.ParseUint(urlVals.Get("offset"), 10, 64)
-		if err != nil {
-			s.logger.Errorf("bad parameters for '%s' request: amount='%v'", methodName, r.URL.RawQuery)
-			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+		var requestValues request
+		if err := schema.NewDecoder().Decode(&requestValues, r.URL.Query()); err != nil {
+			s.logger.Errorf("could not decode GET query: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		reqPlaces.Amount, err = strconv.ParseUint(urlVals.Get("amount"), 10, 64)
-		if err != nil || reqPlaces.Amount == 0 {
-			s.logger.Errorf("bad parameters for '%s' request: amount='%v'", methodName, r.URL.RawQuery)
-			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
-			return
-		}
-
-		placesStoreResp, err := s.placesStore.GetPlaces(r.Context(), &places.GetPlacesRequest{
-			Amount: reqPlaces.Amount,
-			Offset: reqPlaces.Offset,
+		// Get places by city name
+		placesStoreResp, err := s.placesStore.GetPlacesByCityID(context.Background(), &places.GetPlacesByCityIDRequest{
+			CityID: requestValues.CityID,
+			Amount: requestValues.Amount,
+			Offset: requestValues.Offset,
 		})
 		if err != nil {
-			s.logger.Errorf("error in '%s' while requesting places from placesStore: %v", methodName, err)
-			w.WriteHeader(http.StatusBadGateway)
+			s.logger.Errorf("could not get data from places store, error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		respPlaces := make([]*responsePlace, len(placesStoreResp.Places))
-		for i, place := range placesStoreResp.Places {
-			respPlaces[i] = &responsePlace{
-				ID:          place.Id,
-				Title:       place.Title,
-				Address:     place.Address,
-				Description: place.Description,
+		// Converting PB to JSON
+		jsonFormattableResponse := response{
+			Places: make([]*responsePlace, len(placesStoreResp.Places)),
+		}
+		for i, grpcPlace := range placesStoreResp.Places {
+			jsonFormattableResponse.Places[i] = &responsePlace{
+				ID:          grpcPlace.GetId(),
+				Title:       grpcPlace.GetTitle(),
+				Address:     grpcPlace.GetAddress(),
+				Description: grpcPlace.GetDescription(),
 			}
 		}
 
-		if err := json.NewEncoder(w).Encode(response{Places: respPlaces}); err != nil {
-			s.logger.Errorf("error in '%s' while encoding json response", methodName)
+		if err := json.NewEncoder(w).Encode(&jsonFormattableResponse); err != nil {
+			s.logger.Errorf("could not encode response, error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	})
 }

@@ -6,11 +6,12 @@ package places
 import (
 	context "context"
 	fmt "fmt"
+	math "math"
+
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -87,102 +88,57 @@ func (m *Place) GetDescription() string {
 	return ""
 }
 
-type GetPlacesRequest struct {
-	Offset               uint64   `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
-	Amount               uint64   `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
-	ShortDescription     bool     `protobuf:"varint,3,opt,name=shortDescription,proto3" json:"shortDescription,omitempty"`
+type City struct {
+	Id                   uint64   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title                string   `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetPlacesRequest) Reset()         { *m = GetPlacesRequest{} }
-func (m *GetPlacesRequest) String() string { return proto.CompactTextString(m) }
-func (*GetPlacesRequest) ProtoMessage()    {}
-func (*GetPlacesRequest) Descriptor() ([]byte, []int) {
+func (m *City) Reset()         { *m = City{} }
+func (m *City) String() string { return proto.CompactTextString(m) }
+func (*City) ProtoMessage()    {}
+func (*City) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0937d2e70aaf1027, []int{1}
 }
 
-func (m *GetPlacesRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetPlacesRequest.Unmarshal(m, b)
+func (m *City) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_City.Unmarshal(m, b)
 }
-func (m *GetPlacesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetPlacesRequest.Marshal(b, m, deterministic)
+func (m *City) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_City.Marshal(b, m, deterministic)
 }
-func (m *GetPlacesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetPlacesRequest.Merge(m, src)
+func (m *City) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_City.Merge(m, src)
 }
-func (m *GetPlacesRequest) XXX_Size() int {
-	return xxx_messageInfo_GetPlacesRequest.Size(m)
+func (m *City) XXX_Size() int {
+	return xxx_messageInfo_City.Size(m)
 }
-func (m *GetPlacesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetPlacesRequest.DiscardUnknown(m)
+func (m *City) XXX_DiscardUnknown() {
+	xxx_messageInfo_City.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetPlacesRequest proto.InternalMessageInfo
+var xxx_messageInfo_City proto.InternalMessageInfo
 
-func (m *GetPlacesRequest) GetOffset() uint64 {
+func (m *City) GetId() uint64 {
 	if m != nil {
-		return m.Offset
+		return m.Id
 	}
 	return 0
 }
 
-func (m *GetPlacesRequest) GetAmount() uint64 {
+func (m *City) GetTitle() string {
 	if m != nil {
-		return m.Amount
+		return m.Title
 	}
-	return 0
+	return ""
 }
 
-func (m *GetPlacesRequest) GetShortDescription() bool {
-	if m != nil {
-		return m.ShortDescription
-	}
-	return false
-}
-
-type GetPlacesResponse struct {
-	Places               []*Place `protobuf:"bytes,1,rep,name=places,proto3" json:"places,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetPlacesResponse) Reset()         { *m = GetPlacesResponse{} }
-func (m *GetPlacesResponse) String() string { return proto.CompactTextString(m) }
-func (*GetPlacesResponse) ProtoMessage()    {}
-func (*GetPlacesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0937d2e70aaf1027, []int{2}
-}
-
-func (m *GetPlacesResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetPlacesResponse.Unmarshal(m, b)
-}
-func (m *GetPlacesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetPlacesResponse.Marshal(b, m, deterministic)
-}
-func (m *GetPlacesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetPlacesResponse.Merge(m, src)
-}
-func (m *GetPlacesResponse) XXX_Size() int {
-	return xxx_messageInfo_GetPlacesResponse.Size(m)
-}
-func (m *GetPlacesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetPlacesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetPlacesResponse proto.InternalMessageInfo
-
-func (m *GetPlacesResponse) GetPlaces() []*Place {
-	if m != nil {
-		return m.Places
-	}
-	return nil
-}
-
+// AddPlace
 type AddPlaceRequest struct {
-	Place                *Place   `protobuf:"bytes,1,opt,name=place,proto3" json:"place,omitempty"`
+	CityName             string   `protobuf:"bytes,1,opt,name=cityName,proto3" json:"cityName,omitempty"`
+	Place                *Place   `protobuf:"bytes,2,opt,name=place,proto3" json:"place,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -192,7 +148,7 @@ func (m *AddPlaceRequest) Reset()         { *m = AddPlaceRequest{} }
 func (m *AddPlaceRequest) String() string { return proto.CompactTextString(m) }
 func (*AddPlaceRequest) ProtoMessage()    {}
 func (*AddPlaceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0937d2e70aaf1027, []int{3}
+	return fileDescriptor_0937d2e70aaf1027, []int{2}
 }
 
 func (m *AddPlaceRequest) XXX_Unmarshal(b []byte) error {
@@ -213,6 +169,13 @@ func (m *AddPlaceRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_AddPlaceRequest proto.InternalMessageInfo
 
+func (m *AddPlaceRequest) GetCityName() string {
+	if m != nil {
+		return m.CityName
+	}
+	return ""
+}
+
 func (m *AddPlaceRequest) GetPlace() *Place {
 	if m != nil {
 		return m.Place
@@ -231,7 +194,7 @@ func (m *AddPlaceResponse) Reset()         { *m = AddPlaceResponse{} }
 func (m *AddPlaceResponse) String() string { return proto.CompactTextString(m) }
 func (*AddPlaceResponse) ProtoMessage()    {}
 func (*AddPlaceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0937d2e70aaf1027, []int{4}
+	return fileDescriptor_0937d2e70aaf1027, []int{3}
 }
 
 func (m *AddPlaceResponse) XXX_Unmarshal(b []byte) error {
@@ -259,35 +222,310 @@ func (m *AddPlaceResponse) GetId() uint64 {
 	return 0
 }
 
+// GetCities
+type GetCitiesRequest struct {
+	Amount               uint64   `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Offset               uint64   `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetCitiesRequest) Reset()         { *m = GetCitiesRequest{} }
+func (m *GetCitiesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetCitiesRequest) ProtoMessage()    {}
+func (*GetCitiesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0937d2e70aaf1027, []int{4}
+}
+
+func (m *GetCitiesRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCitiesRequest.Unmarshal(m, b)
+}
+func (m *GetCitiesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCitiesRequest.Marshal(b, m, deterministic)
+}
+func (m *GetCitiesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCitiesRequest.Merge(m, src)
+}
+func (m *GetCitiesRequest) XXX_Size() int {
+	return xxx_messageInfo_GetCitiesRequest.Size(m)
+}
+func (m *GetCitiesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCitiesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCitiesRequest proto.InternalMessageInfo
+
+func (m *GetCitiesRequest) GetAmount() uint64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *GetCitiesRequest) GetOffset() uint64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+type GetCitiesResponse struct {
+	Cities               []*City  `protobuf:"bytes,1,rep,name=cities,proto3" json:"cities,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetCitiesResponse) Reset()         { *m = GetCitiesResponse{} }
+func (m *GetCitiesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetCitiesResponse) ProtoMessage()    {}
+func (*GetCitiesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0937d2e70aaf1027, []int{5}
+}
+
+func (m *GetCitiesResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCitiesResponse.Unmarshal(m, b)
+}
+func (m *GetCitiesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCitiesResponse.Marshal(b, m, deterministic)
+}
+func (m *GetCitiesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCitiesResponse.Merge(m, src)
+}
+func (m *GetCitiesResponse) XXX_Size() int {
+	return xxx_messageInfo_GetCitiesResponse.Size(m)
+}
+func (m *GetCitiesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCitiesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCitiesResponse proto.InternalMessageInfo
+
+func (m *GetCitiesResponse) GetCities() []*City {
+	if m != nil {
+		return m.Cities
+	}
+	return nil
+}
+
+// GetRandomPlaceByCityName
+type GetRandomPlaceByCityNameRequest struct {
+	CityName             string   `protobuf:"bytes,1,opt,name=cityName,proto3" json:"cityName,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetRandomPlaceByCityNameRequest) Reset()         { *m = GetRandomPlaceByCityNameRequest{} }
+func (m *GetRandomPlaceByCityNameRequest) String() string { return proto.CompactTextString(m) }
+func (*GetRandomPlaceByCityNameRequest) ProtoMessage()    {}
+func (*GetRandomPlaceByCityNameRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0937d2e70aaf1027, []int{6}
+}
+
+func (m *GetRandomPlaceByCityNameRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetRandomPlaceByCityNameRequest.Unmarshal(m, b)
+}
+func (m *GetRandomPlaceByCityNameRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetRandomPlaceByCityNameRequest.Marshal(b, m, deterministic)
+}
+func (m *GetRandomPlaceByCityNameRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetRandomPlaceByCityNameRequest.Merge(m, src)
+}
+func (m *GetRandomPlaceByCityNameRequest) XXX_Size() int {
+	return xxx_messageInfo_GetRandomPlaceByCityNameRequest.Size(m)
+}
+func (m *GetRandomPlaceByCityNameRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetRandomPlaceByCityNameRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetRandomPlaceByCityNameRequest proto.InternalMessageInfo
+
+func (m *GetRandomPlaceByCityNameRequest) GetCityName() string {
+	if m != nil {
+		return m.CityName
+	}
+	return ""
+}
+
+type GetRandomPlaceByCityNameResponse struct {
+	Place                *Place   `protobuf:"bytes,1,opt,name=place,proto3" json:"place,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetRandomPlaceByCityNameResponse) Reset()         { *m = GetRandomPlaceByCityNameResponse{} }
+func (m *GetRandomPlaceByCityNameResponse) String() string { return proto.CompactTextString(m) }
+func (*GetRandomPlaceByCityNameResponse) ProtoMessage()    {}
+func (*GetRandomPlaceByCityNameResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0937d2e70aaf1027, []int{7}
+}
+
+func (m *GetRandomPlaceByCityNameResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetRandomPlaceByCityNameResponse.Unmarshal(m, b)
+}
+func (m *GetRandomPlaceByCityNameResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetRandomPlaceByCityNameResponse.Marshal(b, m, deterministic)
+}
+func (m *GetRandomPlaceByCityNameResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetRandomPlaceByCityNameResponse.Merge(m, src)
+}
+func (m *GetRandomPlaceByCityNameResponse) XXX_Size() int {
+	return xxx_messageInfo_GetRandomPlaceByCityNameResponse.Size(m)
+}
+func (m *GetRandomPlaceByCityNameResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetRandomPlaceByCityNameResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetRandomPlaceByCityNameResponse proto.InternalMessageInfo
+
+func (m *GetRandomPlaceByCityNameResponse) GetPlace() *Place {
+	if m != nil {
+		return m.Place
+	}
+	return nil
+}
+
+// GetPlacesByCityId
+type GetPlacesByCityIDRequest struct {
+	CityID               uint64   `protobuf:"varint,1,opt,name=cityID,proto3" json:"cityID,omitempty"`
+	Offset               uint64   `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Amount               uint64   `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetPlacesByCityIDRequest) Reset()         { *m = GetPlacesByCityIDRequest{} }
+func (m *GetPlacesByCityIDRequest) String() string { return proto.CompactTextString(m) }
+func (*GetPlacesByCityIDRequest) ProtoMessage()    {}
+func (*GetPlacesByCityIDRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0937d2e70aaf1027, []int{8}
+}
+
+func (m *GetPlacesByCityIDRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlacesByCityIDRequest.Unmarshal(m, b)
+}
+func (m *GetPlacesByCityIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlacesByCityIDRequest.Marshal(b, m, deterministic)
+}
+func (m *GetPlacesByCityIDRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlacesByCityIDRequest.Merge(m, src)
+}
+func (m *GetPlacesByCityIDRequest) XXX_Size() int {
+	return xxx_messageInfo_GetPlacesByCityIDRequest.Size(m)
+}
+func (m *GetPlacesByCityIDRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlacesByCityIDRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPlacesByCityIDRequest proto.InternalMessageInfo
+
+func (m *GetPlacesByCityIDRequest) GetCityID() uint64 {
+	if m != nil {
+		return m.CityID
+	}
+	return 0
+}
+
+func (m *GetPlacesByCityIDRequest) GetOffset() uint64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetPlacesByCityIDRequest) GetAmount() uint64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+type GetPlacesByCityIDResponse struct {
+	Places               []*Place `protobuf:"bytes,1,rep,name=places,proto3" json:"places,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetPlacesByCityIDResponse) Reset()         { *m = GetPlacesByCityIDResponse{} }
+func (m *GetPlacesByCityIDResponse) String() string { return proto.CompactTextString(m) }
+func (*GetPlacesByCityIDResponse) ProtoMessage()    {}
+func (*GetPlacesByCityIDResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0937d2e70aaf1027, []int{9}
+}
+
+func (m *GetPlacesByCityIDResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlacesByCityIDResponse.Unmarshal(m, b)
+}
+func (m *GetPlacesByCityIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlacesByCityIDResponse.Marshal(b, m, deterministic)
+}
+func (m *GetPlacesByCityIDResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlacesByCityIDResponse.Merge(m, src)
+}
+func (m *GetPlacesByCityIDResponse) XXX_Size() int {
+	return xxx_messageInfo_GetPlacesByCityIDResponse.Size(m)
+}
+func (m *GetPlacesByCityIDResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlacesByCityIDResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPlacesByCityIDResponse proto.InternalMessageInfo
+
+func (m *GetPlacesByCityIDResponse) GetPlaces() []*Place {
+	if m != nil {
+		return m.Places
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Place)(nil), "Place")
-	proto.RegisterType((*GetPlacesRequest)(nil), "GetPlacesRequest")
-	proto.RegisterType((*GetPlacesResponse)(nil), "GetPlacesResponse")
+	proto.RegisterType((*City)(nil), "City")
 	proto.RegisterType((*AddPlaceRequest)(nil), "AddPlaceRequest")
 	proto.RegisterType((*AddPlaceResponse)(nil), "AddPlaceResponse")
+	proto.RegisterType((*GetCitiesRequest)(nil), "GetCitiesRequest")
+	proto.RegisterType((*GetCitiesResponse)(nil), "GetCitiesResponse")
+	proto.RegisterType((*GetRandomPlaceByCityNameRequest)(nil), "GetRandomPlaceByCityNameRequest")
+	proto.RegisterType((*GetRandomPlaceByCityNameResponse)(nil), "GetRandomPlaceByCityNameResponse")
+	proto.RegisterType((*GetPlacesByCityIDRequest)(nil), "GetPlacesByCityIDRequest")
+	proto.RegisterType((*GetPlacesByCityIDResponse)(nil), "GetPlacesByCityIDResponse")
 }
 
 func init() { proto.RegisterFile("places.proto", fileDescriptor_0937d2e70aaf1027) }
 
 var fileDescriptor_0937d2e70aaf1027 = []byte{
-	// 272 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x91, 0xd1, 0x4a, 0xc3, 0x30,
-	0x14, 0x86, 0xe9, 0xd6, 0xd6, 0xed, 0x54, 0xb4, 0x3d, 0x88, 0x84, 0x21, 0x52, 0x72, 0x55, 0xbc,
-	0xc8, 0xa0, 0x7b, 0x02, 0x41, 0xf0, 0x56, 0xe2, 0x13, 0xd4, 0x25, 0xc3, 0xc0, 0x6c, 0x6a, 0x92,
-	0xbd, 0xbf, 0x34, 0xc9, 0x5c, 0xe9, 0x2e, 0xff, 0xff, 0xf4, 0xf0, 0x7d, 0x3d, 0x81, 0xdb, 0xe1,
-	0xd8, 0xed, 0xa5, 0x65, 0x83, 0xd1, 0x4e, 0x53, 0x05, 0xd9, 0xc7, 0x98, 0xf1, 0x0e, 0x16, 0x4a,
-	0x90, 0xa4, 0x4e, 0x9a, 0x94, 0x2f, 0x94, 0xc0, 0x07, 0xc8, 0x9c, 0x72, 0x47, 0x49, 0x16, 0x75,
-	0xd2, 0xac, 0x79, 0x08, 0x48, 0xe0, 0xa6, 0x13, 0xc2, 0x48, 0x6b, 0xc9, 0xd2, 0xf7, 0xe7, 0x88,
-	0x35, 0x14, 0x42, 0xda, 0xbd, 0x51, 0x83, 0x53, 0xba, 0x27, 0xa9, 0x9f, 0x4e, 0x2b, 0xda, 0x43,
-	0xf9, 0x2e, 0x9d, 0xa7, 0x59, 0x2e, 0x7f, 0x4f, 0xd2, 0x3a, 0x7c, 0x84, 0x5c, 0x1f, 0x0e, 0x56,
-	0xba, 0x48, 0x8e, 0x69, 0xec, 0xbb, 0x1f, 0x7d, 0xea, 0x9d, 0xc7, 0xa7, 0x3c, 0x26, 0x7c, 0x81,
-	0xd2, 0x7e, 0x6b, 0xe3, 0xde, 0x26, 0xa8, 0x51, 0x64, 0xc5, 0xaf, 0x7a, 0xba, 0x83, 0x6a, 0xc2,
-	0xb3, 0x83, 0xee, 0xad, 0xc4, 0x67, 0xc8, 0xc3, 0xff, 0x93, 0xa4, 0x5e, 0x36, 0x45, 0x9b, 0x33,
-	0xff, 0x01, 0x8f, 0x2d, 0xdd, 0xc2, 0xfd, 0xab, 0x10, 0xa1, 0x8b, 0x8e, 0x4f, 0x90, 0xf9, 0xa1,
-	0x57, 0xbc, 0x6c, 0x84, 0x92, 0x52, 0x28, 0x2f, 0x0b, 0x11, 0x32, 0xbb, 0x65, 0x6b, 0xa0, 0x08,
-	0x1a, 0x9f, 0x4e, 0x1b, 0x89, 0x2d, 0xac, 0xff, 0xc5, 0xb0, 0x62, 0xf3, 0xa3, 0x6c, 0x90, 0x5d,
-	0x7b, 0x6f, 0x61, 0x75, 0xc6, 0x60, 0xc9, 0x66, 0x8a, 0x9b, 0x8a, 0xcd, 0x1d, 0xbe, 0x72, 0xff,
-	0xbe, 0xbb, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xe7, 0x1e, 0x41, 0x42, 0xef, 0x01, 0x00, 0x00,
+	// 407 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0xdf, 0x6a, 0xe2, 0x40,
+	0x14, 0xc6, 0x49, 0x4c, 0xb2, 0x7a, 0xb2, 0xec, 0xea, 0xb0, 0x2c, 0x31, 0xec, 0x9f, 0x74, 0xae,
+	0xbc, 0x28, 0x53, 0x48, 0x2f, 0x4b, 0xa1, 0xd5, 0x82, 0xb4, 0x85, 0x52, 0xd2, 0x07, 0x28, 0x31,
+	0x33, 0xc2, 0x80, 0x66, 0xd2, 0xcc, 0x78, 0xe1, 0xd3, 0xf4, 0x55, 0x8b, 0x93, 0x89, 0x4d, 0xd5,
+	0xa0, 0x97, 0xdf, 0xa7, 0x67, 0xce, 0x39, 0xbf, 0xf3, 0x05, 0xbe, 0x17, 0x8b, 0x34, 0x63, 0x92,
+	0x14, 0xa5, 0x50, 0x02, 0x73, 0x70, 0x9f, 0x37, 0x1a, 0xfd, 0x00, 0x9b, 0xd3, 0xc0, 0x8a, 0xac,
+	0x91, 0x93, 0xd8, 0x9c, 0xa2, 0x5f, 0xe0, 0x2a, 0xae, 0x16, 0x2c, 0xb0, 0x23, 0x6b, 0xd4, 0x4b,
+	0x2a, 0x81, 0x02, 0xf8, 0x96, 0x52, 0x5a, 0x32, 0x29, 0x83, 0x8e, 0xf6, 0x6b, 0x89, 0x22, 0xf0,
+	0x29, 0x93, 0x59, 0xc9, 0x0b, 0xc5, 0x45, 0x1e, 0x38, 0xfa, 0xd7, 0xa6, 0x85, 0xcf, 0xc1, 0x99,
+	0x70, 0xb5, 0x3e, 0xad, 0x13, 0x7e, 0x84, 0x9f, 0xb7, 0x94, 0xea, 0xd9, 0x12, 0xf6, 0xb6, 0x62,
+	0x52, 0xa1, 0x10, 0xba, 0x19, 0x57, 0xeb, 0xa7, 0x74, 0xc9, 0x74, 0x79, 0x2f, 0xd9, 0x6a, 0xf4,
+	0x07, 0x5c, 0xbd, 0x97, 0x7e, 0xc4, 0x8f, 0x3d, 0x52, 0x55, 0x56, 0x26, 0xc6, 0xd0, 0xff, 0x7c,
+	0x4c, 0x16, 0x22, 0x97, 0x7b, 0x0b, 0xe3, 0x31, 0xf4, 0xa7, 0x4c, 0x4d, 0xb8, 0xe2, 0x4c, 0xd6,
+	0x1d, 0x7f, 0x83, 0x97, 0x2e, 0xc5, 0x2a, 0x57, 0xe6, 0x7f, 0x46, 0x6d, 0x7c, 0x31, 0x9f, 0x4b,
+	0xa6, 0x74, 0x3b, 0x27, 0x31, 0x0a, 0xc7, 0x30, 0x68, 0xbc, 0x61, 0x1a, 0xfd, 0x05, 0x2f, 0xd3,
+	0x4e, 0x60, 0x45, 0x9d, 0x91, 0x1f, 0xbb, 0x64, 0x83, 0x21, 0x31, 0x26, 0xbe, 0x86, 0xff, 0x53,
+	0xa6, 0x92, 0x34, 0xa7, 0x62, 0xa9, 0x27, 0x1c, 0xaf, 0x27, 0x66, 0xab, 0x13, 0x16, 0xc7, 0x37,
+	0x10, 0xb5, 0x97, 0x9b, 0x09, 0xb6, 0x70, 0xac, 0x43, 0x70, 0x66, 0x10, 0x4c, 0x99, 0xd2, 0x96,
+	0xac, 0x8a, 0xef, 0xef, 0x1a, 0x00, 0x32, 0x6d, 0xd4, 0x00, 0x2a, 0xd5, 0x06, 0xa0, 0x01, 0xac,
+	0xd3, 0x04, 0x86, 0xaf, 0x60, 0x78, 0xa0, 0x87, 0x19, 0xef, 0x1f, 0x78, 0x55, 0x26, 0x0d, 0xa0,
+	0x7a, 0x3e, 0xe3, 0xc6, 0xef, 0x36, 0xf8, 0x55, 0xe9, 0x8b, 0x12, 0x25, 0x43, 0xaf, 0x7a, 0xe0,
+	0x83, 0x2b, 0xa3, 0x88, 0x1c, 0x81, 0x19, 0x9e, 0x91, 0xa3, 0xbc, 0x62, 0xe8, 0x6d, 0xcf, 0x88,
+	0x06, 0x64, 0x37, 0x16, 0x21, 0x22, 0xfb, 0x57, 0xbe, 0x80, 0x6e, 0x1d, 0x31, 0xd4, 0x27, 0x3b,
+	0xd1, 0x0d, 0x07, 0x64, 0x2f, 0x7f, 0x0f, 0x3a, 0x2b, 0x5f, 0x91, 0xa0, 0x21, 0x69, 0x3b, 0x45,
+	0x18, 0x92, 0x56, 0x82, 0x33, 0x4f, 0x7f, 0xcc, 0x97, 0x1f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x4a,
+	0x21, 0xad, 0x76, 0xdc, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -302,8 +540,10 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type PlacesStoreClient interface {
-	GetPlaces(ctx context.Context, in *GetPlacesRequest, opts ...grpc.CallOption) (*GetPlacesResponse, error)
+	GetRandomPlaceByCityName(ctx context.Context, in *GetRandomPlaceByCityNameRequest, opts ...grpc.CallOption) (*GetRandomPlaceByCityNameResponse, error)
+	GetCities(ctx context.Context, in *GetCitiesRequest, opts ...grpc.CallOption) (*GetCitiesResponse, error)
 	AddPlace(ctx context.Context, in *AddPlaceRequest, opts ...grpc.CallOption) (*AddPlaceResponse, error)
+	GetPlacesByCityID(ctx context.Context, in *GetPlacesByCityIDRequest, opts ...grpc.CallOption) (*GetPlacesByCityIDResponse, error)
 }
 
 type placesStoreClient struct {
@@ -314,9 +554,18 @@ func NewPlacesStoreClient(cc grpc.ClientConnInterface) PlacesStoreClient {
 	return &placesStoreClient{cc}
 }
 
-func (c *placesStoreClient) GetPlaces(ctx context.Context, in *GetPlacesRequest, opts ...grpc.CallOption) (*GetPlacesResponse, error) {
-	out := new(GetPlacesResponse)
-	err := c.cc.Invoke(ctx, "/PlacesStore/GetPlaces", in, out, opts...)
+func (c *placesStoreClient) GetRandomPlaceByCityName(ctx context.Context, in *GetRandomPlaceByCityNameRequest, opts ...grpc.CallOption) (*GetRandomPlaceByCityNameResponse, error) {
+	out := new(GetRandomPlaceByCityNameResponse)
+	err := c.cc.Invoke(ctx, "/PlacesStore/GetRandomPlaceByCityName", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *placesStoreClient) GetCities(ctx context.Context, in *GetCitiesRequest, opts ...grpc.CallOption) (*GetCitiesResponse, error) {
+	out := new(GetCitiesResponse)
+	err := c.cc.Invoke(ctx, "/PlacesStore/GetCities", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -332,41 +581,76 @@ func (c *placesStoreClient) AddPlace(ctx context.Context, in *AddPlaceRequest, o
 	return out, nil
 }
 
+func (c *placesStoreClient) GetPlacesByCityID(ctx context.Context, in *GetPlacesByCityIDRequest, opts ...grpc.CallOption) (*GetPlacesByCityIDResponse, error) {
+	out := new(GetPlacesByCityIDResponse)
+	err := c.cc.Invoke(ctx, "/PlacesStore/GetPlacesByCityID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PlacesStoreServer is the server API for PlacesStore service.
 type PlacesStoreServer interface {
-	GetPlaces(context.Context, *GetPlacesRequest) (*GetPlacesResponse, error)
+	GetRandomPlaceByCityName(context.Context, *GetRandomPlaceByCityNameRequest) (*GetRandomPlaceByCityNameResponse, error)
+	GetCities(context.Context, *GetCitiesRequest) (*GetCitiesResponse, error)
 	AddPlace(context.Context, *AddPlaceRequest) (*AddPlaceResponse, error)
+	GetPlacesByCityID(context.Context, *GetPlacesByCityIDRequest) (*GetPlacesByCityIDResponse, error)
 }
 
 // UnimplementedPlacesStoreServer can be embedded to have forward compatible implementations.
 type UnimplementedPlacesStoreServer struct {
 }
 
-func (*UnimplementedPlacesStoreServer) GetPlaces(ctx context.Context, req *GetPlacesRequest) (*GetPlacesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPlaces not implemented")
+func (*UnimplementedPlacesStoreServer) GetRandomPlaceByCityName(ctx context.Context, req *GetRandomPlaceByCityNameRequest) (*GetRandomPlaceByCityNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRandomPlaceByCityName not implemented")
+}
+func (*UnimplementedPlacesStoreServer) GetCities(ctx context.Context, req *GetCitiesRequest) (*GetCitiesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCities not implemented")
 }
 func (*UnimplementedPlacesStoreServer) AddPlace(ctx context.Context, req *AddPlaceRequest) (*AddPlaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddPlace not implemented")
+}
+func (*UnimplementedPlacesStoreServer) GetPlacesByCityID(ctx context.Context, req *GetPlacesByCityIDRequest) (*GetPlacesByCityIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPlacesByCityID not implemented")
 }
 
 func RegisterPlacesStoreServer(s *grpc.Server, srv PlacesStoreServer) {
 	s.RegisterService(&_PlacesStore_serviceDesc, srv)
 }
 
-func _PlacesStore_GetPlaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPlacesRequest)
+func _PlacesStore_GetRandomPlaceByCityName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRandomPlaceByCityNameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlacesStoreServer).GetPlaces(ctx, in)
+		return srv.(PlacesStoreServer).GetRandomPlaceByCityName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/PlacesStore/GetPlaces",
+		FullMethod: "/PlacesStore/GetRandomPlaceByCityName",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlacesStoreServer).GetPlaces(ctx, req.(*GetPlacesRequest))
+		return srv.(PlacesStoreServer).GetRandomPlaceByCityName(ctx, req.(*GetRandomPlaceByCityNameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlacesStore_GetCities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCitiesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlacesStoreServer).GetCities(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/PlacesStore/GetCities",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlacesStoreServer).GetCities(ctx, req.(*GetCitiesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -389,17 +673,43 @@ func _PlacesStore_AddPlace_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlacesStore_GetPlacesByCityID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlacesByCityIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlacesStoreServer).GetPlacesByCityID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/PlacesStore/GetPlacesByCityID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlacesStoreServer).GetPlacesByCityID(ctx, req.(*GetPlacesByCityIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _PlacesStore_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "PlacesStore",
 	HandlerType: (*PlacesStoreServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetPlaces",
-			Handler:    _PlacesStore_GetPlaces_Handler,
+			MethodName: "GetRandomPlaceByCityName",
+			Handler:    _PlacesStore_GetRandomPlaceByCityName_Handler,
+		},
+		{
+			MethodName: "GetCities",
+			Handler:    _PlacesStore_GetCities_Handler,
 		},
 		{
 			MethodName: "AddPlace",
 			Handler:    _PlacesStore_AddPlace_Handler,
+		},
+		{
+			MethodName: "GetPlacesByCityID",
+			Handler:    _PlacesStore_GetPlacesByCityID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
