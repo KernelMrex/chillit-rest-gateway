@@ -1,5 +1,6 @@
 api_server:
   hostname: ":8080"
+  allowed_origins: "http://chillit.com"
   
 store_service:
   url: "localhost:10050"

@@ -12,28 +12,41 @@ import (
 )
 
 type server struct {
-	logger      *logrus.Logger
-	placesStore places.PlacesStoreClient
-	router      *mux.Router
+	logger         *logrus.Logger
+	placesStore    places.PlacesStoreClient
+	router         *mux.Router
+	allowedOrigins string
 }
 
-func newServer(placesStore places.PlacesStoreClient) *server {
+func newServer(placesStore places.PlacesStoreClient, allowedOrigins string) *server {
 	s := &server{
-		logger:      logrus.New(),
-		router:      mux.NewRouter(),
-		placesStore: placesStore,
+		logger:         logrus.New(),
+		router:         mux.NewRouter(),
+		placesStore:    placesStore,
+		allowedOrigins: allowedOrigins,
 	}
 	s.configureRouter()
 	return s
 }
 
 func (s *server) configureRouter() {
-	s.router.HandleFunc("/places", s.getPlacesHandler()).Methods(http.MethodGet)
+	s.router.HandleFunc("/places", s.CorsMiddleware(s.getPlacesHandler())).Methods(http.MethodGet)
 	s.router.HandleFunc("/cities", s.notImplementedHandler()).Methods(http.MethodGet)
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+func (s *server) CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	// TODO: separate origin url in a config
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Origin")
+		w.Header().Add("Access-Control-Allow-Origin", s.allowedOrigins)
+		w.Header().Add("Access-Control-Allow-Credentials", "true")
+		w.Header().Add("Access-Control-Allow-Methods", "POST, GET")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *server) getPlacesHandler() http.HandlerFunc {
@@ -58,7 +71,9 @@ func (s *server) getPlacesHandler() http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var requestValues request
-		if err := schema.NewDecoder().Decode(&requestValues, r.URL.Query()); err != nil {
+		queryDecoder := schema.NewDecoder()
+		queryDecoder.IgnoreUnknownKeys(true)
+		if err := queryDecoder.Decode(&requestValues, r.URL.Query()); err != nil {
 			s.logger.Errorf("could not decode GET query: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return

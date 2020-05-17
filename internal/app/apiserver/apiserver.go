@@ -8,7 +8,7 @@ import (
 
 // Start API web server
 func Start(config *Config, placesStore places.PlacesStoreClient) error {
-	srv := newServer(placesStore)
+	srv := newServer(placesStore, config.AllowedOrigins)
 	if config == nil {
 		return errors.New("apiserver could not start error: <nil> config")
 	}
