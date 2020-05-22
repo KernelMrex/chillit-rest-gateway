@@ -31,7 +31,7 @@ func newServer(placesStore places.PlacesStoreClient, allowedOrigins string) *ser
 
 func (s *server) configureRouter() {
 	s.router.HandleFunc("/places", s.CorsMiddleware(s.getPlacesHandler())).Methods(http.MethodGet)
-	s.router.HandleFunc("/cities", s.notImplementedHandler()).Methods(http.MethodGet)
+	s.router.HandleFunc("/cities", s.CorsMiddleware(s.getCitiesHandler())).Methods(http.MethodGet)
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +50,6 @@ func (s *server) CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *server) getPlacesHandler() http.HandlerFunc {
-	const methodName string = "GET /places"
-
 	type request struct {
 		Offset uint64 `schema:"offset"`
 		Amount uint64 `schema:"amount"`
@@ -63,6 +61,7 @@ func (s *server) getPlacesHandler() http.HandlerFunc {
 		Title       string `json:"title"`
 		Address     string `json:"address"`
 		Description string `json:"description"`
+		ImgURL      string `json:"image_url"`
 	}
 
 	type response struct {
@@ -95,12 +94,67 @@ func (s *server) getPlacesHandler() http.HandlerFunc {
 		jsonFormattableResponse := response{
 			Places: make([]*responsePlace, len(placesStoreResp.Places)),
 		}
-		for i, grpcPlace := range placesStoreResp.Places {
+		for i, pbPlace := range placesStoreResp.Places {
 			jsonFormattableResponse.Places[i] = &responsePlace{
-				ID:          grpcPlace.GetId(),
-				Title:       grpcPlace.GetTitle(),
-				Address:     grpcPlace.GetAddress(),
-				Description: grpcPlace.GetDescription(),
+				ID:          pbPlace.GetId(),
+				Title:       pbPlace.GetTitle(),
+				Address:     pbPlace.GetAddress(),
+				Description: pbPlace.GetDescription(),
+				ImgURL:      pbPlace.GetImgURL(),
+			}
+		}
+
+		if err := json.NewEncoder(w).Encode(&jsonFormattableResponse); err != nil {
+			s.logger.Errorf("could not encode response, error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+}
+
+func (s *server) getCitiesHandler() http.HandlerFunc {
+	type request struct {
+		Offset uint64 `schema:"offset"`
+		Amount uint64 `schema:"amount"`
+	}
+
+	type responseCity struct {
+		ID    uint64 `json:"id"`
+		Title string `json:"title"`
+	}
+
+	type response struct {
+		Cities []*responseCity `json:"cities"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var requestValues request
+		queryDecoder := schema.NewDecoder()
+		queryDecoder.IgnoreUnknownKeys(true)
+		if err := queryDecoder.Decode(&requestValues, r.URL.Query()); err != nil {
+			s.logger.Errorf("could not decode GET query: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		citiesStoreResp, err := s.placesStore.GetCities(context.Background(), &places.GetCitiesRequest{
+			Amount: requestValues.Amount,
+			Offset: requestValues.Offset,
+		})
+		if err != nil {
+			s.logger.Errorf("could not get data from places store, error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// Converting PB to JSON
+		jsonFormattableResponse := response{
+			Cities: make([]*responseCity, len(citiesStoreResp.Cities)),
+		}
+		for i, pbCity := range citiesStoreResp.Cities {
+			jsonFormattableResponse.Cities[i] = &responseCity{
+				ID:    pbCity.GetId(),
+				Title: pbCity.GetTitle(),
 			}
 		}
 
